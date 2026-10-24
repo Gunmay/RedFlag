@@ -29,3 +29,20 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+if "page" not in st.session_state:
+    st.session_state.page = "Home"
+
+home, scams, scanner, how, about = st.columns(5)
+
+if home.button("Home"):
+    st.session_state.page = "Home"
+if scams.button("Real scams"):
+    st.session_state.page = "Real scams"
+if scanner.button("Scanner"):
+    st.session_state.page = "Scanner"
+if how.button("How it works"):
+    st.session_state.page = "How it works"
+if about.button("About"):
+    st.session_state.page = "About"
+
+st.write("You are on: " + st.session_state.page)
