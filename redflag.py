@@ -7,7 +7,7 @@ print("Paste the FULL offer in ONE line and press Enter:")
 
 offer = input()
 
-bad_words = ["training fee", "registration fee", "pay to confirm", "security deposit", "refundable deposit", "pay a deposit", "deposit of"]
+bad_words = ["training fee", "registration fee", "pay to confirm", "security deposit", "refundable deposit", "pay a deposit", "deposit of","program fee","fee"]
 has_money = any(word in offer.lower() for word in bad_words)
 
 
@@ -18,6 +18,7 @@ print("\nEnter the company name from the offer:")
 
 company = input()
 print("\nEnter the email domain from the offer (e.g. amazon.com):")
+print("If there is no email, type nil or n.a.")
 email_domain = input().strip().lower()
 
 print("\nAsks student to pay money?", "YES" if has_money else "No")
@@ -48,7 +49,7 @@ else:
     if company.lower() in text and any(word in text for word in ["scam", "fake", "fraud", "cheat"]):
         serious_scam = True
 
-score = 70
+score = 80
 known_companies = ["google", "amazon", "microsoft", "ibm", "tcs", "infosys", "accenture", "deloitte", "wipro", "hcl"]
 
 if serious_scam:
@@ -99,30 +100,52 @@ else:
 
 score = 80
 if has_money:
-    score -= 45
+    score -= 30
 if serious_scam:
     if company.lower() in known_companies:
         score -= 10   
     else:
-        score -= 20   
+        score -= 30  
 if not registered:
     score -= 25
 if not role_listed:
     score -= 15
 
-print("Checking if email domain matches company...")
-domain_search = client.search.query(query=f"{company} official website")
+no_email = email_domain in ["nil", "n.a.", "na", "n/a", "none", ""]
 
-domain_match = False
-for result in domain_search.results[:5]:
-    if email_domain in result.url.lower():
-        domain_match = True
-        break
-
-if domain_match:
-    print("Email domain appears to match the company website.")
+if no_email:
+    domain_match = True
+    domain_trust = True
+    print("No email was given, so domain points were not cut.")
 else:
-    print("Email domain does not clearly match the company website.")
+    print("Checking if email domain matches company...")
+    domain_search = client.search.query(query=f"{company} official website")
+
+    domain_match = False
+    for result in domain_search.results[:5]:
+        if email_domain in result.url.lower():
+            domain_match = True
+            break
+
+    if domain_match:
+        print("Email domain appears to match the company website.")
+    else:
+        print("Email domain does not clearly match the company website.")
+
+    print("\nChecking domain trust signals...")
+    trust_search = client.search.query(query=f"{email_domain} domain age OR whois OR registered")
+
+    domain_trust = False
+    for result in trust_search.results[:5]:
+        text = (result.title + " " + getattr(result, "snippet", "")).lower()
+        if any(word in text for word in ["registered", "created", "whois", "domain age"]):
+            domain_trust = True
+            break
+
+    if domain_trust:
+        print("Domain has some public registration information.")
+    else:
+        print("Limited public information found about the domain.")
 
 if not domain_match:
     score -= 15
