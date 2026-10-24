@@ -67,6 +67,16 @@ elif st.session_state.page == "Scanner":
             st.write("Asks the student to pay money? YES")
         else:
             st.write("Asks the student to pay money? No")
+        score = 80
+        if has_money:
+            score -= 45
+        st.write("Trust score: " + str(score)+"%")
+        if score < 40:
+            st.write("Risk level: HIGH RISK")
+        elif score < 65:
+            st.write("Risk level: MEDIUM RISK")
+        else:
+            st.write("Risk level: LOW RISK")
 elif st.session_state.page == "How it works":
     st.write("The five checks will be explained here.")
 elif st.session_state.page == "About":
