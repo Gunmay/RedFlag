@@ -15,26 +15,50 @@ if "no deposit" in offer.lower() or "no payment" in offer.lower() or "no fee" in
     has_money = False
 
 print("\nEnter the company name from the offer:")
+
 company = input()
+print("\nEnter the email domain from the offer (e.g. amazon.com):")
+email_domain = input().strip().lower()
+
 print("\nAsks student to pay money?", "YES" if has_money else "No")
 
-print("\nSearching for scam reports...")
-scam = client.search.query(query=f"{company} internship scam")
-
+print("\nSearching for scam reports (including Reddit)...")
+scam = client.search.query(query=f"{company} internship scam site:reddit.com")
 
 serious_scam = False
-for result in scam.results[:20]:  
+reddit_mentions = 0
+
+for result in scam.results[:15]:
     text = (result.title + " " + getattr(result, "snippet", "")).lower()
+    url = result.url.lower()
+    if "reddit.com" in url:
+        reddit_mentions += 1
+    
     if company.lower() in text and any(word in text for word in ["scam", "fake", "fraud", "cheat"]):
         serious_scam = True
-        break
 
 if serious_scam:
-    print("Serious scam reports found about this company.")
+    print(f"Serious scam reports found (including {reddit_mentions} Reddit mentions).")
 else:
     print("No strong scam reports found specifically about this company.")
+    
+    if "reddit.com" in url:
+        reddit_mentions += 1
+    
+    if company.lower() in text and any(word in text for word in ["scam", "fake", "fraud", "cheat"]):
+        serious_scam = True
+
 score = 70
 known_companies = ["google", "amazon", "microsoft", "ibm", "tcs", "infosys", "accenture", "deloitte", "wipro", "hcl"]
+
+if serious_scam:
+    if company.lower() in known_companies:
+        score -= 8
+    else:
+        score -= 18
+    if reddit_mentions >= 2:
+        score -= 5   
+
 
 print("\nChecking if company is registered...")
 
@@ -48,6 +72,7 @@ else:
     for result in reg_search.results[:8]:
         text = (result.title + " " + getattr(result, "snippet", "")).lower()
         if company.lower() in text and any(w in text for w in ["cin", "incorporated", "mca"]):
+
             registered = True
             break
     if registered:
@@ -83,6 +108,23 @@ if serious_scam:
 if not registered:
     score -= 25
 if not role_listed:
+    score -= 15
+
+print("Checking if email domain matches company...")
+domain_search = client.search.query(query=f"{company} official website")
+
+domain_match = False
+for result in domain_search.results[:5]:
+    if email_domain in result.url.lower():
+        domain_match = True
+        break
+
+if domain_match:
+    print("Email domain appears to match the company website.")
+else:
+    print("Email domain does not clearly match the company website.")
+
+if not domain_match:
     score -= 15
 
 score = max(0, min(100, score))
