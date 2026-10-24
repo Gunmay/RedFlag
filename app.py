@@ -56,10 +56,17 @@ elif st.session_state.page == "Scanner":
     company = st.text_input("Company name")
     domain = st.text_input("Sender email domain")
     if st.button("Run RedFlag scan"):
-        st.write("Company: " + company)
-        st.write("Domain: " + domain)
-        st.write("Offer length: " + str(len(offer)))
-        
+        bad_words = ["training fee", "registration fee", "pay to confirm", "security deposit", "refundable deposit", "pay a deposit", "deposit of", "deposit"]
+        low = offer.lower()
+        has_money = any(word in low for word in bad_words)
+        if "no deposit" in low or "no payment" in low or "no fee" in low:
+            has_money = False
+        if "deposit of" in low or "security deposit" in low or "refundable deposit" in low or "pay a deposit" in low:
+            has_money = True
+        if has_money:
+            st.write("Asks the student to pay money? YES")
+        else:
+            st.write("Asks the student to pay money? No")
 elif st.session_state.page == "How it works":
     st.write("The five checks will be explained here.")
 elif st.session_state.page == "About":
