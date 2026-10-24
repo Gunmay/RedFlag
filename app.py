@@ -51,7 +51,15 @@ if st.session_state.page == "Home":
 elif st.session_state.page == "Real scams":
     st.write("Four common fake-offer tricks will be listed here.")
 elif st.session_state.page == "Scanner":
-    st.write("The offer box will be here.")
+    st.write("Paste the offer. The checks will use this text.")
+    offer = st.text_area("The full offer", height=200)
+    company = st.text_input("Company name")
+    domain = st.text_input("Sender email domain")
+    if st.button("Run RedFlag scan"):
+        st.write("Company: " + company)
+        st.write("Domain: " + domain)
+        st.write("Offer length: " + str(len(offer)))
+        
 elif st.session_state.page == "How it works":
     st.write("The five checks will be explained here.")
 elif st.session_state.page == "About":
