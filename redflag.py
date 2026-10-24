@@ -52,3 +52,29 @@ elif score < 70:
     print("Risk Level: MEDIUM RISK")
 else:
     print("Risk Level: LOW RISK")
+
+   
+
+
+known_companies = ["google", "amazon", "microsoft", "ibm", "tcs", "infosys", "accenture", "deloitte", "wipro", "hcl"]
+
+print("\nChecking if company is registered...")
+
+if company.lower() in known_companies:
+    registered = True
+    print("Company is a well-known registered company.")
+else:
+    
+    reg_search = client.search.query(query=f'"{company}" CIN OR MCA OR incorporated')
+    registered = False
+    for result in reg_search.results[:8]:
+        text = (result.title + " " + getattr(result, "snippet", "")).lower()
+        if company.lower() in text and any(w in text for w in ["cin", "incorporated", "mca"]):
+            registered = True
+            break
+    if registered:
+        print("Company appears to be registered.")
+    else:
+        print("Could not confirm company registration.")
+        score-=15
+print("score=",score)
