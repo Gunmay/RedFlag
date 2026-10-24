@@ -103,6 +103,12 @@ elif st.session_state.page == "Scanner":
         else:
             st.write("Risk level: LOW RISK")
 elif st.session_state.page == "How it works":
-    st.write("The five checks will be explained here.")
+    st.write("Five checks. The score starts at 80.")
+    st.write("1. Fee demand. Looks for words such as deposit, training fee, and pay to confirm. Cuts 45 points.")
+    st.write("2. Company name. Google, Microsoft, Amazon, TCS, and the other known names lose nothing. Any other typed name cuts 15 points.")
+    st.write("3. Email domain. Gmail, Yahoo, Outlook, and Hotmail cut 15 points. nil or n.a. cuts nothing.")
+    st.write("4. Scam reports. This search is not on the website yet. It will use the check from redflag.py.")
+    st.write("5. Careers page. This search is not on the website yet. It will use the check from redflag.py.")
+    st.write("Under 40 is high risk. From 40 to 64 is medium. 65 and above is low.")
 elif st.session_state.page == "About":
     st.write("RedFlag checks an offer before a student pays anything.")
