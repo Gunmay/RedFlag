@@ -70,7 +70,9 @@ elif st.session_state.page == "Scanner":
         if "deposit of" in low or "security deposit" in low or "refundable deposit" in low or "pay a deposit" in low:
             has_money = True
       
-
+        serious_scam = False
+        reddit_mentions = 0
+        role_listed = False
         registered = company_name in known
         no_email = domain_name in no_email_words
         free_email = any(item in domain_name for item in free_emails)
@@ -94,6 +96,13 @@ elif st.session_state.page == "Scanner":
                         reddit_mentions = reddit_mentions + 1
                     if company_name in text and any(word in text for word in scam_words):
                         serious_scam = True
+                careers = tf.search.query(query=company.strip() + " careers OR jobs OR internship")
+                career_rows = list(getattr(careers, "results", []) or [])[:6]
+                career_words = ["intern", "internship", "career", "job", "opening"]
+                for row in career_rows:
+                    text = ((getattr(row, "title", "") or "") + " " + (getattr(row, "snippet", "") or "")).lower()
+                    if company_name in text and any(word in text for word in career_words):
+                        role_listed = True
                 if not no_email and not free_email:
                     site = tf.search.query(query=company.strip() + " official website")
                     site_rows = list(getattr(site, "results", []) or [])[:5]
@@ -121,6 +130,10 @@ elif st.session_state.page == "Scanner":
             st.write("Company is a well-known registered company.")
         else:
             st.write("This company is not on the known list.")
+        if company_name != "" and (registered or role_listed):
+            st.write("Jobs or internships were found for this company.")
+        elif company_name != "" and search_note == "":
+            st.write("Could not find the role on careers pages.")
         if serious_scam:
             st.write("Serious scam reports found. Reddit mentions: " + str(reddit_mentions))
         elif search_note == "":
@@ -138,6 +151,11 @@ elif st.session_state.page == "Scanner":
                 st.write("Email domain does not clearly match the company website.")
             if not domain_trust:
                 st.write("Limited public information found about the domain.")
+    
+
+       
+            
+            
         if search_note != "":
             st.write(search_note)
         score = 80
@@ -151,6 +169,8 @@ elif st.session_state.page == "Scanner":
             score -=15
         if not no_email and not free_email and not domain_trust:
             score -=5
+        if company_name != "" and not registered and not role_listed and search_note == "":
+            score -=10
         if serious_scam:
             if registered:
                 score -= 8
