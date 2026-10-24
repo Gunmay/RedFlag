@@ -110,5 +110,11 @@ elif st.session_state.page == "How it works":
     st.write("4. Scam reports. This search is not on the website yet. It will use the check from redflag.py.")
     st.write("5. Careers page. This search is not on the website yet. It will use the check from redflag.py.")
     st.write("Under 40 is high risk. From 40 to 64 is medium. 65 and above is low.")
+
 elif st.session_state.page == "About":
-    st.write("RedFlag checks an offer before a student pays anything.")
+    st.write("RedFlag checks an internship offer before a student pays or shares documents.")
+    st.write("A low score is a warning. A high score is not a promise. Never pay money to get an internship.")
+    st.write("The checks are the payment request, the company name, scam reports, the careers page, and the sender's email domain.")
+    st.write("Built by The Debug Duo: Soumil Bansal and Gunmay Bhanot.")
+
+    
