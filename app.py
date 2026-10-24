@@ -46,3 +46,13 @@ if about.button("About"):
     st.session_state.page = "About"
 
 st.write("You are on: " + st.session_state.page)
+if st.session_state.page == "Home":
+    st.write("This is the opening page.")
+elif st.session_state.page == "Real scams":
+    st.write("Four common fake-offer tricks will be listed here.")
+elif st.session_state.page == "Scanner":
+    st.write("The offer box will be here.")
+elif st.session_state.page == "How it works":
+    st.write("The five checks will be explained here.")
+elif st.session_state.page == "About":
+    st.write("RedFlag checks an offer before a student pays anything.")
