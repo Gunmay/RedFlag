@@ -60,6 +60,7 @@ elif st.session_state.page == "Scanner":
         known = ["google", "amazon", "microsoft", "ibm", "tcs", "infosys", "accenture", "deloitte", "wipro", "hcl"]
         no_email_words = ["", "nil", "n.a.", "na", "n/a", "none"]
         free_emails = ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com"]
+        scam_words = ["scam", "fake", "fraud", "cheat"]
         low = offer.lower()
         company_name = company.lower().strip()
         domain_name = domain.lower().strip()
@@ -68,26 +69,77 @@ elif st.session_state.page == "Scanner":
             has_money = False
         if "deposit of" in low or "security deposit" in low or "refundable deposit" in low or "pay a deposit" in low:
             has_money = True
+      
+
+        registered = company_name in known
+        no_email = domain_name in no_email_words
+        free_email = any(item in domain_name for item in free_emails)
+        serious_scam = False
+        reddit_mentions = 0
+        domain_match = True
+        domain_trust = True
+        search_note = ""
+        if company_name == "":
+            search_note = "Type the company name before the live search can run."
+        else:
+            try:
+                from tinyfish import TinyFish
+                tf = TinyFish()
+                reddit = tf.search.query(query=company.strip() + " internship scam site:reddit.com")
+                rows = list(getattr(reddit, "results", []) or [])[:15]
+                for row in rows:
+                    url = (getattr(row, "url", "") or "").lower()
+                    text = ((getattr(row, "title", "") or "") + " " + (getattr(row, "snippet", "") or "")).lower()
+                    if "reddit.com" in url:
+                        reddit_mentions = reddit_mentions + 1
+                    if company_name in text and any(word in text for word in scam_words):
+                        serious_scam = True
+                if not no_email and not free_email:
+                    site = tf.search.query(query=company.strip() + " official website")
+                    site_rows = list(getattr(site, "results", []) or [])[:5]
+                    domain_match = False
+                    for row in site_rows:
+                        if domain_name in (getattr(row, "url", "") or "").lower():
+                            domain_match = True
+                    trust = tf.search.query(query=domain_name + " domain age OR whois OR registered")
+                    trust_rows = list(getattr(trust, "results", []) or [])[:5]
+                    domain_trust = False
+                    for row in trust_rows:
+                        text = ((getattr(row, "title", "") or "") + " " + (getattr(row, "snippet", "") or "")).lower()
+                        if "registered" in text or "created" in text or "whois" in text or "domain age" in text:
+                            domain_trust = True
+            except Exception as exc:
+                search_note = "Live search could not finish. " + str(exc)
+        
         if has_money:
             st.write("Asks the student to pay money? YES")
         else:
             st.write("Asks the student to pay money? No")
-
-        registered = company_name in known
         if company_name == "":
             st.write("Type the company name.")
         elif registered:
             st.write("Company is a well-known registered company.")
         else:
             st.write("This company is not on the known list.")
-        no_email = domain_name in no_email_words
-        free_email = any(item in domain_name for item in free_emails)
+        if serious_scam:
+            st.write("Serious scam reports found. Reddit mentions: " + str(reddit_mentions))
+        elif search_note == "":
+            st.write("No strong scam reports found on Reddit.")
+
         if no_email:
             st.write("No email was given, so domain points were not cut.")
         elif free_email:
             st.write("This is a free email, not a company domain.")
+        elif domain_match and domain_trust:
+            st.write("Email domain matches and has public registration information.")
+        
         else:
-            st.write("Email domain noted: " + domain_name)
+            if not domain_match:
+                st.write("Email domain does not clearly match the company website.")
+            if not domain_trust:
+                st.write("Limited public information found about the domain.")
+        if search_note != "":
+            st.write(search_note)
         score = 80
         if has_money:
             score -= 30
@@ -95,10 +147,21 @@ elif st.session_state.page == "Scanner":
             score-=25
         if free_email and not no_email:
             score -= 15
+        if not no_email and not free_email and not domain_match:
+            score -=15
+        if not no_email and not free_email and not domain_trust:
+            score -=5
+        if serious_scam:
+            if registered:
+                score -= 8
+            else:
+                score-= 18
+            if reddit_mentions >= 2:
+                score -=5
         st.write("Trust score: " + str(score)+"%")
         if score < 40:
             st.write("Risk level: HIGH RISK")
-        elif score < 70:
+        elif score < 65:
             st.write("Risk level: MEDIUM RISK")
         else:
             st.write("Risk level: LOW RISK")
