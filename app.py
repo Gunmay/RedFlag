@@ -19,3 +19,13 @@ st.markdown(
 
 st.markdown('<p class="hero">Don\'t pay for<br>a <span class="pink">fake offer.</span></p>', unsafe_allow_html=True)
 st.write("Paste an internship offer. RedFlag checks it and shows the evidence.")
+st.markdown(
+    """
+    <p>
+    <b>5</b> checks &nbsp;&nbsp;
+    <b>80</b> starting score &nbsp;&nbsp;
+    <b>nil</b> if the offer has no email
+    </p>
+    """,
+    unsafe_allow_html=True,
+)
