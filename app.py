@@ -57,7 +57,9 @@ elif st.session_state.page == "Scanner":
     domain = st.text_input("Sender email domain")
     if st.button("Run RedFlag scan"):
         bad_words = ["training fee", "registration fee", "pay to confirm", "security deposit", "refundable deposit", "pay a deposit", "deposit of", "deposit"]
+        known = ["google", "amazon", "microsoft", "ibm", "tcs", "infosys", "accenture", "deloitte", "wipro", "hcl"]
         low = offer.lower()
+        company_name = company.lower().strip()
         has_money = any(word in low for word in bad_words)
         if "no deposit" in low or "no payment" in low or "no fee" in low:
             has_money = False
@@ -67,13 +69,23 @@ elif st.session_state.page == "Scanner":
             st.write("Asks the student to pay money? YES")
         else:
             st.write("Asks the student to pay money? No")
+
+        registered = company_name in known
+        if company_name == "":
+            st.write("Type the company name.")
+        elif registered:
+            st.write("Company is a well-known registered company.")
+        else:
+            st.write("This company is not on the known list.")
         score = 80
         if has_money:
-            score -= 45
+            score -= 30
+        if company_name != "" and not registered:
+            score-=25
         st.write("Trust score: " + str(score)+"%")
         if score < 40:
             st.write("Risk level: HIGH RISK")
-        elif score < 65:
+        elif score < 70:
             st.write("Risk level: MEDIUM RISK")
         else:
             st.write("Risk level: LOW RISK")
