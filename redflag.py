@@ -14,10 +14,9 @@ has_money = any(word in offer.lower() for word in bad_words)
 if "no deposit" in offer.lower() or "no payment" in offer.lower() or "no fee" in offer.lower():
     has_money = False
 
-print("\nAsks student to pay money?", "YES" if has_money else "No")
-
 print("\nEnter the company name from the offer:")
 company = input()
+print("\nAsks student to pay money?", "YES" if has_money else "No")
 
 print("\nSearching for scam reports...")
 scam = client.search.query(query=f"{company} internship scam")
@@ -34,28 +33,7 @@ if serious_scam:
     print("Serious scam reports found about this company.")
 else:
     print("No strong scam reports found specifically about this company.")
-
-
 score = 70
-if has_money:
-    score -= 40
-if serious_scam:
-    score -= 25
-
-score = max(0, min(100, score))
-
-print(f"\nTrust Score: {score}/100")
-
-if score < 40:
-    print("Risk Level: HIGH RISK")
-elif score < 70:
-    print("Risk Level: MEDIUM RISK")
-else:
-    print("Risk Level: LOW RISK")
-
-   
-
-
 known_companies = ["google", "amazon", "microsoft", "ibm", "tcs", "infosys", "accenture", "deloitte", "wipro", "hcl"]
 
 print("\nChecking if company is registered...")
@@ -76,5 +54,44 @@ else:
         print("Company appears to be registered.")
     else:
         print("Could not confirm company registration.")
-        score-=15
-print("score=",score)
+      
+
+print("\nChecking if the role is listed on the company careers page...")
+
+careers_search = client.search.query(query=f"{company} careers OR {company} jobs OR {company} internship")
+
+role_listed = False
+for result in careers_search.results[:6]:
+    text = (result.title + " " + getattr(result, "snippet", "")).lower()
+    if any(word in text for word in ["intern", "internship", "career", "job", "opening"]):
+        role_listed = True
+        break
+
+if role_listed:
+    print("Role appears to be listed on careers/jobs pages.")
+else:
+    print("Could not find the role on official careers pages.")
+
+score = 80
+if has_money:
+    score -= 45
+if serious_scam:
+    if company.lower() in known_companies:
+        score -= 10   
+    else:
+        score -= 20   
+if not registered:
+    score -= 25
+if not role_listed:
+    score -= 15
+
+score = max(0, min(100, score))
+
+print(f"\nTrust Score: {score}%")
+
+if score < 40:
+    print("Risk Level: HIGH RISK")
+elif score < 70:
+    print("Risk Level: MEDIUM RISK")
+else:
+    print("Risk Level: LOW RISK")
