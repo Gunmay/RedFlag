@@ -149,6 +149,8 @@ else:
 
 if not domain_match:
     score -= 15
+if not domain_trust:
+    score -= 5
 
 score = max(0, min(100, score))
 
@@ -156,7 +158,7 @@ print(f"\nTrust Score: {score}%")
 
 if score < 40:
     print("Risk Level: HIGH RISK")
-elif score < 70:
+elif score < 65:
     print("Risk Level: MEDIUM RISK")
 else:
     print("Risk Level: LOW RISK")
